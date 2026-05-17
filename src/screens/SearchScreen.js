@@ -53,7 +53,7 @@ export default function SearchScreen({ navigation }) {
     }
   };
 
-  // --- DEBOUNCE EFFECT ---
+ 
   // Wait 500ms after user stops typing before hitting the API
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

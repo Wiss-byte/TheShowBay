@@ -11,8 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  TouchableWithoutFeedback,
-  Keyboard
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,24 +20,21 @@ import { auth } from "../firebase/config";
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // Added for safety
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const register = async () => {
-    // 1. Basic Validation
     if (!email || !password || !confirmPassword) {
       Alert.alert("Missing Info", "Please fill in all fields.");
       return;
     }
 
-    // 2. Password Match Check
     if (password !== confirmPassword) {
       Alert.alert("Password Mismatch", "Passwords do not match.");
       return;
     }
 
-    // 3. Length Check (Optional but good UX)
     if (password.length < 6) {
       Alert.alert("Weak Password", "Password should be at least 6 characters.");
       return;
@@ -47,14 +43,11 @@ export default function RegisterScreen({ navigation }) {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      // Success! App.js listener handles navigation.
     } catch (err) {
       let msg = err.message;
-      // Readable Firebase Errors
-      if (err.code === 'auth/email-already-in-use') msg = "That email is already in use.";
-      if (err.code === 'auth/invalid-email') msg = "The email address is invalid.";
-      if (err.code === 'auth/weak-password') msg = "Password is too weak.";
-      
+      if (err.code === "auth/email-already-in-use") msg = "That email is already in use.";
+      if (err.code === "auth/invalid-email") msg = "The email address is invalid.";
+      if (err.code === "auth/weak-password") msg = "Password is too weak.";
       Alert.alert("Registration Failed", msg);
     } finally {
       setLoading(false);
@@ -64,13 +57,15 @@ export default function RegisterScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
-      
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardView}
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Create Account.</Text>
@@ -79,7 +74,7 @@ export default function RegisterScreen({ navigation }) {
 
           {/* Form */}
           <View style={styles.form}>
-            
+
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
@@ -91,6 +86,7 @@ export default function RegisterScreen({ navigation }) {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                autoCorrect={false}
               />
             </View>
 
@@ -106,10 +102,10 @@ export default function RegisterScreen({ navigation }) {
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={20} 
-                  color="#94a3b8" 
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#94a3b8"
                 />
               </TouchableOpacity>
             </View>
@@ -128,9 +124,9 @@ export default function RegisterScreen({ navigation }) {
             </View>
 
             {/* Register Button */}
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.buttonDisabled]} 
-              onPress={register} 
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={register}
               disabled={loading}
             >
               {loading ? (
@@ -148,9 +144,8 @@ export default function RegisterScreen({ navigation }) {
               <Text style={styles.link}> Login</Text>
             </TouchableOpacity>
           </View>
-
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -162,8 +157,12 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   header: {
     marginBottom: 40,
@@ -200,6 +199,7 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     fontSize: 16,
     height: "100%",
+    outlineStyle: "none",
   },
   button: {
     backgroundColor: "#22c55e",
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20
+    marginTop: 20,
   },
   footerText: {
     color: "#94a3b8",

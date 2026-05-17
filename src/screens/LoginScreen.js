@@ -11,8 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  TouchableWithoutFeedback,
-  Keyboard
+  ScrollView,
 } from "react-native";
 import { auth } from "../firebase/config";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,14 +31,11 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Navigation is usually handled by an AuthStack listener in App.js, 
-      // but if you handle it manually:
-      // navigation.replace("Home"); 
     } catch (err) {
       let msg = err.message;
-      if (err.code === 'auth/invalid-credential') msg = "Invalid email or password.";
-      if (err.code === 'auth/user-not-found') msg = "User not found.";
-      if (err.code === 'auth/wrong-password') msg = "Incorrect password.";
+      if (err.code === "auth/invalid-credential") msg = "Invalid email or password.";
+      if (err.code === "auth/user-not-found") msg = "User not found.";
+      if (err.code === "auth/wrong-password") msg = "Incorrect password.";
       Alert.alert("Login Failed", msg);
     } finally {
       setLoading(false);
@@ -49,13 +45,15 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
-      
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardView}
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Welcome Back.</Text>
@@ -64,7 +62,7 @@ export default function LoginScreen({ navigation }) {
 
           {/* Form */}
           <View style={styles.form}>
-            
+
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color="#94a3b8" style={styles.inputIcon} />
@@ -76,6 +74,7 @@ export default function LoginScreen({ navigation }) {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                autoCorrect={false}
               />
             </View>
 
@@ -91,24 +90,24 @@ export default function LoginScreen({ navigation }) {
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons 
-                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                  size={20} 
-                  color="#94a3b8" 
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#94a3b8"
                 />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity 
-              style={styles.forgotPass} 
+            <TouchableOpacity
+              style={styles.forgotPass}
               onPress={() => Alert.alert("Reset Password", "Feature coming soon!")}
             >
               <Text style={styles.forgotPassText}>Forgot Password?</Text>
             </TouchableOpacity>
 
             {/* Login Button */}
-            <TouchableOpacity 
-              style={[styles.button, loading && styles.buttonDisabled]} 
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
               onPress={login}
               disabled={loading}
             >
@@ -127,9 +126,8 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.link}> Create Account</Text>
             </TouchableOpacity>
           </View>
-
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -141,8 +139,12 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   header: {
     marginBottom: 40,
@@ -179,6 +181,7 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     fontSize: 16,
     height: "100%",
+    outlineStyle: "none", // supprime le contour bleu sur Web
   },
   forgotPass: {
     alignSelf: "flex-end",
@@ -202,11 +205,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonDisabled: {
-    backgroundColor: "#166534", // Darker green when disabled
+    backgroundColor: "#166534",
     opacity: 0.7,
   },
   buttonText: {
-    color: "#020617", // Dark text on green button for high contrast
+    color: "#020617",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20
+    marginTop: 20,
   },
   footerText: {
     color: "#94a3b8",

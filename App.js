@@ -7,19 +7,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import TabNavigator from "./src/navigation/TabNavigator";
-import { ThemeProvider } from './themes/ThemeContext';
-const Stack = createNativeStackNavigator();
 
-const MyTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: "#020617", // <--- THIS FIXES THE FLASH
-    card: "#020617",       
-    text: "#f8fafc",
-    border: "#0f172a",     
-  },
-};
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -42,8 +31,7 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <NavigationContainer theme={MyTheme}>  
+      <NavigationContainer >  
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           {user ? (
             // User is logged in
@@ -60,6 +48,5 @@ export default function App() {
           )}
         </Stack.Navigator>
       </NavigationContainer>
-    </ThemeProvider>
   );
 }
